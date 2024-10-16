@@ -17,6 +17,17 @@ function createWindow() {
     }
   })
 
+  // sessionStorage.defaultSession.webRequest.onHeadersReceived((details, callback) => {
+  //   callback({
+  //     responseHeaders: {
+  //       ...details.responseHeaders,
+  //       'Content-Security-Policy': [
+  //         "default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self' http://localhost:3000"
+  //       ]
+  //     }
+  //   })
+  // })
+
   mainWindow.on('ready-to-show', () => {
     mainWindow.show()
   })

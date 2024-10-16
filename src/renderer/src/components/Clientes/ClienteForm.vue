@@ -16,19 +16,57 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, watch, onMounted, defineEmits } from 'vue' // Um exemplo de composição para requisições, ajuste conforme necessário
+
+// Recebe o ID da pessoa a ser editada
+const props = defineProps({
+  pessoa: {
+    type: Object,
+    default: null
+  }
+})
 
 const nome = ref('')
 const email = ref('')
+
+const emit = defineEmits(['close'])
+
+// Função para carregar dados da pessoa para edição
+const loadPessoa = () => {
+  if (props.pessoa !== null) {
+    nome.value = props.pessoa.nome
+    email.value = props.pessoa.email
+  }
+}
+
+// Carrega os dados sempre que o `pessoaId` for alterado
+watch(() => props.pessoa, (newPessoa) => {
+  if (newPessoa) {
+    nome.value = newPessoa.nome
+    email.value = newPessoa.email
+  } else {
+    resetForm()
+  }
+} )
+
+function resetForm() {
+  nome.value = ''
+  email.value = ''
+}
 
 const handleClick = async (event) => {
   const formElement = document.getElementById('formCliente')
 
   if (event.target.id === 'btnGravar') {
-    // Enviar uma requisição POST
+    // Se `pessoaId` estiver definido, envia uma requisição `PUT` para atualizar, caso contrário, `POST` para criar novo
+    const method = props.pessoa ? 'PUT' : 'POST'
+    const url = props.pessoa
+      ? `http://localhost:3000/pessoas/${props.pessoa.id}`
+      : 'http://localhost:3000/pessoas'
+
     try {
-      const response = await fetch('http://localhost:3000/pessoas', {
-        method: 'POST',
+      const response = await fetch(url, {
+        method: method,
         headers: {
           'Content-Type': 'application/json'
         },
@@ -42,9 +80,11 @@ const handleClick = async (event) => {
         console.log('Dados enviados com sucesso')
         alert('Dados enviados com sucesso')
         formElement.reset()
+        resetForm()
+        emit('close')
       } else {
         console.error('Falha ao enviar os dados', response)
-        alert('Falha ao enviar os dados', response)
+        alert('Falha ao enviar os dados')
       }
     } catch (error) {
       alert('Ocorreu um erro inesperado')
@@ -54,8 +94,10 @@ const handleClick = async (event) => {
 
   if (event.target.id === 'btnLimpar') {
     formElement.reset()
-    nome.value = ''
-    email.value = ''
+    resetForm()
   }
 }
+
+// Carrega os dados da pessoa ao montar o componente
+onMounted(loadPessoa)
 </script>
